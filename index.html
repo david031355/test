@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח שמחות - ישיבת יסודות</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #8D6E63;
+            --secondary-color: #D7CCC8;
+            --accent-color: #5D4037;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --highlight-color: #FFD700;
+            --input-bg: #ffffff;
+            --input-border: #e0e0e0;
+            --box-border: #efebe9;
+            --date-bg: #fff8f6;
+        }
+
+        body.dark-mode {
+            --primary-color: #A1887F;
+            --secondary-color: #4E342E;
+            --accent-color: #D7CCC8;
+            --bg-color: #121212;
+            --card-bg: #1E1E1E;
+            --text-main: #E0E0E0;
+            --text-secondary: #AAAAAA;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --input-bg: #2C2C2C;
+            --input-border: #444444;
+            --box-border: #333333;
+            --date-bg: #2A2422;
+            --highlight-color: #B8860B;
+        }
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--secondary-color);
+            color: #fff;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin: 0 0 10px 0;
+            font-size: 2.2rem;
+            padding-top: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrapper {
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .date-input-wrapper {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .input-style {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-family: 'Rubik', sans-serif;
+            border: 2px solid var(--input-border);
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            outline: none;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+        }
+
+        .input-style:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(141, 110, 99, 0.15);
+        }
+        
+        input[type="date"] {
+            appearance: none;
+            -webkit-appearance: none;
+            color: var(--text-main);
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .quick-filters::-webkit-scrollbar {
+            height: 4px;
+        }
+        .quick-filters::-webkit-scrollbar-thumb {
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        .filter-chip {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--input-border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .filter-chip:hover {
+            background: var(--secondary-color);
+            color: var(--text-main);
+        }
+
+        .filter-chip.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .events-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .event-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 110px 1fr auto;
+            gap: 20px;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-right: 5px solid var(--primary-color);
+            position: relative;
+        }
+
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        .event-card.highlight {
+            border: 2px solid var(--highlight-color);
+            border-right: 6px solid var(--highlight-color);
+            background-color: rgba(255, 215, 0, 0.05);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        .date-box {
+            text-align: center;
+            background-color: var(--date-bg);
+            padding: 10px 5px;
+            border-radius: 8px;
+            color: var(--accent-color);
+            border: 1px solid var(--box-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+            gap: 4px;
+        }
+
+        .date-day {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .date-full {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .relative-date-tag {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+            width: fit-content;
+        }
+        
+        .tag-today { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .tag-tomorrow { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+        .tag-this-week { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .tag-next-week { background-color: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+
+        body.dark-mode .tag-today { background-color: rgba(198, 40, 40, 0.2); color: #ff8a80; border-color: rgba(255, 205, 210, 0.2); }
+        body.dark-mode .tag-tomorrow { background-color: rgba(239, 108, 0, 0.2); color: #ffd180; border-color: rgba(255, 224, 178, 0.2); }
+        body.dark-mode .tag-this-week { background-color: rgba(46, 125, 50, 0.2); color: #b9f6ca; border-color: rgba(200, 230, 201, 0.2); }
+        body.dark-mode .tag-next-week { background-color: rgba(21, 101, 192, 0.2); color: #82b1ff; border-color: rgba(187, 222, 251, 0.2); }
+
+        .days-count {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: var(--input-bg);
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-weight: 500;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            border: 1px solid var(--box-border);
+        }
+
+        .info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-box h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: var(--text-main);
+        }
+
+        .info-location, .info-orchestra {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            flex-wrap: wrap;
+        }
+        
+        .icon { opacity: 0.8; }
+
+        .actions-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .vaad-badge {
+            text-align: center;
+            font-weight: 500;
+            color: var(--accent-color);
+            font-size: 1rem;
+            background: var(--box-border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+
+        .loading, .error, .no-results {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .error { color: #d32f2f; border: 1px solid #ffcdd2; }
+        body.dark-mode .error { color: #ef5350; border-color: #d32f2f; background-color: rgba(211, 47, 47, 0.1); }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--input-border);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--primary-color);
+            border-right: 6px solid var(--primary-color);
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        .toast button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 10px;
+        }
+
+        .reminder-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            h1 { font-size: 1.6rem; margin-top: 30px; }
+            .theme-toggle { top: 0; left: 0; }
+            .filters-container { flex-direction: column; gap: 10px; }
+            .event-card { 
+                grid-template-columns: 1fr; 
+                gap: 12px; 
+                padding: 15px; 
+                border-right: none; 
+                border-top: 5px solid var(--primary-color); 
+            }
+            .event-card.highlight { border-top: 6px solid var(--highlight-color); border-right: none; }
+            
+            .vaad-badge { 
+                position: absolute; 
+                top: 15px; 
+                left: 15px; 
+                font-size: 0.85rem; 
+                padding: 4px 10px; 
+            }
+            
+            .date-box { 
+                background: none; 
+                border: none; 
+                padding: 0; 
+                margin-top: 5px; 
+                margin-bottom: 5px; 
+                min-width: unset; 
+                align-items: flex-start;
+            }
+            
+            .relative-date-tag { margin-top: 2px; font-size: 0.85rem; }
+            .info-box h3 { font-size: 1.4rem; padding-left: 60px; }
+            .actions-row { margin-top: 15px; justify-content: flex-start; }
+            .nav-btn span { display: none; }
+            .nav-btn::after { content: attr(title); font-size: 0.8rem; margin-right: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <button id="themeToggle" class="theme-toggle" title="החלף תצוגה">🌙</button>
+        <h1>חתונות ושמחות ישיבת יסודות 💍</h1>
+        <div class="subtitle">הלוח המעודכן ביותר לשמחות הישיבה</div>
+    </header>
+
+    <div class="filters-container">
+        <div class="search-input-wrapper">
+            <input type="text" id="searchInput" class="input-style" placeholder="🔍 חיפוש לפי חתן, ועד או אולם...">
+        </div>
+        <div class="date-input-wrapper">
+            <input type="date" id="dateInput" class="input-style" aria-label="סנן לפי תאריך">
+        </div>
+    </div>
+
+    <!-- כפתורי סינון מהיר -->
+    <div class="quick-filters" id="quickFilters">
+        <button class="filter-chip active" data-filter="all">הכל</button>
+        <button class="filter-chip" data-filter="today">היום</button>
+        <button class="filter-chip" data-filter="week">השבוע</button>
+        <button class="filter-chip" data-filter="month">בקרוב</button>
+    </div>
+
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>טוען את השמחות... בקרוב אצלך 😉</div>
+    </div>
+    
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="eventsList" class="events-list"></div>
+    <div id="noResults" class="no-results" style="display: none;">
+        לא נמצאו אירועים התואמים לחיפוש שלך 😕
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+    const SHEET_ID = '1kU7TYAae8W0qojrbC0En8VwDHed5JM8RvmQDniIbWXk';
+    const SHEET_NAME = encodeURIComponent('עדכון חתונות - יסודות');
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+    let allEvents = [];
+    let currentQuickFilter = 'all';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initTheme();
+        init();
+        checkReminders();
+    });
+
+    function initTheme() {
+        const toggleBtn = document.getElementById('themeToggle');
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        
+        if (isDark) {
+            document.body.classList.add('dark-mode');
+            toggleBtn.textContent = '☀️';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isNowDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isNowDark);
+            toggleBtn.textContent = isNowDark ? '☀️' : '🌙';
+        });
+    }
+
+    async function fetchSheetData(url) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+            return await res.text();
+        } catch (fetchErr) {
+            console.warn('Fetch נכשל, מנסה באמצעות XMLHttpRequest כגיבוי:', fetchErr);
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve(xhr.responseText);
+                    } else {
+                        reject(new Error('שגיאת רשת בטעינת הנתונים, קוד: ' + xhr.status));
+                    }
+                };
+                xhr.onerror = function() {
+                    reject(new Error('שגיאת תקשורת בטעינת הנתונים'));
+                };
+                xhr.send();
+            });
+        }
+    }
+
+    async function init() {
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const searchInput = document.getElementById('searchInput');
+        const dateInput = document.getElementById('dateInput');
+        const quickFilters = document.querySelectorAll('.filter-chip');
+
+        try {
+            const csvText = await fetchSheetData(SHEET_URL);
+            let rawEvents = parseCSV(csvText);
+
+            if (rawEvents.length > 0 && (rawEvents[0][0].includes('תאריך') || rawEvents[0][1].includes('יום'))) {
+                rawEvents.shift();
+            }
+
+            allEvents = processEvents(rawEvents);
+            loadingEl.style.display = 'none';
+            renderEvents(allEvents);
+
+            // אירועי חיפוש וסינון
+            searchInput.addEventListener('input', runFilters);
+            dateInput.addEventListener('change', () => {
+                document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+                currentQuickFilter = 'custom';
+                runFilters();
+            });
+
+            quickFilters.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    dateInput.value = '';
+                    quickFilters.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentQuickFilter = e.target.dataset.filter;
+                    runFilters();
+                });
+            });
+
+        } catch (err) {
+            console.error('שגיאה בטעינת הנתונים:', err);
+            loadingEl.style.display = 'none';
+            errorEl.innerHTML = 'אופס! לא הצלחנו לטעון את הנתונים.<br>ייתכן שאין חיבור לאינטרנט או שהקובץ לא זמין.';
+            errorEl.style.display = 'block';
+        }
+    }
+
+    function processEvents(rows) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); 
+
+        const eventsWithDates = rows.map(row => {
+            let dateStr = row[6] || row[0] || ''; 
+            let dateObj = parseDateString(dateStr);
+            return { originalRow: row, dateObj: dateObj };
+        });
+
+        // הצגת אירועים מהיום והלאה, או אירועים ללא תאריך מוגדר
+        const futureEvents = eventsWithDates.filter(item => {
+            if (!item.dateObj) return true;
+            return item.dateObj >= today;
+        });
+
+        // הגנה: אם אין אירועים עתידיים, נציג את כלל האירועים כדי למנוע לוח ריק
+        const eventsToShow = futureEvents.length > 0 ? futureEvents : eventsWithDates;
+
+        eventsToShow.sort((a, b) => {
+            if (!a.dateObj) return 1;
+            if (!b.dateObj) return -1;
+            return a.dateObj - b.dateObj;
+        });
+
+        return eventsToShow;
+    }
+
+    function runFilters() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filterDateVal = document.getElementById('dateInput').value;
+        
+        let filterDateObj = null;
+        if (filterDateVal) {
+            const parts = filterDateVal.split('-');
+            if (parts.length === 3) {
+                filterDateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                filterDateObj.setHours(0, 0, 0, 0);
+            }
+        }
+
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        const filtered = allEvents.filter(item => {
+            const row = item.originalRow;
+            const eventDateObj = item.dateObj;
+            
+            const rowText = row.join(' ').toLowerCase();
+            const textMatch = rowText.includes(searchTerm);
+            
+            let specificDateMatch = true;
+            if (filterDateObj && eventDateObj) {
+                specificDateMatch = eventDateObj.getTime() === filterDateObj.getTime();
+            }
+
+            let quickFilterMatch = true;
+            if (eventDateObj && currentQuickFilter !== 'all' && currentQuickFilter !== 'custom') {
+                const diffTime = eventDateObj - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (currentQuickFilter === 'today') {
+                    quickFilterMatch = diffDays === 0;
+                } else if (currentQuickFilter === 'week') {
+                    quickFilterMatch = diffDays <= 7 && diffDays >= 0;
+                } else if (currentQuickFilter === 'month') {
+                    quickFilterMatch = diffDays <= 30 && diffDays >= 0;
+                }
+            }
+
+            return textMatch && specificDateMatch && quickFilterMatch;
+        });
+
+        const noResults = document.getElementById('noResults');
+        noResults.style.display = filtered.length === 0 ? 'block' : 'none';
+
+        const highlightMode = !!filterDateObj;
+        renderEvents(filtered, highlightMode);
+    }
+
+    function getRelativeTimeLabel(dateObj) {
+        if (!dateObj) return null;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const target = new Date(dateObj);
+        target.setHours(0, 0, 0, 0);
+        
+        const diffDays = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) return { text: 'היום! 🎉', class: 'tag-today' };
+        if (diffDays === 1) return { text: 'מחר', class: 'tag-tomorrow' };
+        
+        const daysUntilEndOfWeek = 6 - now.getDay();
+        if (diffDays <= daysUntilEndOfWeek && diffDays > 1) return { text: 'השבוע', class: 'tag-this-week' };
+        
+        if (diffDays >= (daysUntilEndOfWeek + 1) && diffDays <= (daysUntilEndOfWeek + 7)) {
+            return { text: 'שבוע הבא', class: 'tag-next-week' };
+        }
+        return null;
+    }
+
+    function parseDateString(dateStr) {
+        if (!dateStr) return null;
+        const cleanStr = dateStr.trim().split(' ')[0]; 
+        const parts = cleanStr.split(/[-/.]/); 
+        if (parts.length >= 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            let year = parseInt(parts[2], 10);
+            if (year < 100) year += 2000;
+            return new Date(year, month, day);
+        }
+        return null;
+    }
+
+    function parseCSV(text) {
+        const rows = [];
+        let currentRow = [];
+        let currentCell = '';
+        let insideQuotes = false;
+        text = text.replace(/\r/g, '');
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (char === '"') {
+                if (insideQuotes && text[i+1] === '"') { currentCell += '"'; i++; }
+                else { insideQuotes = !insideQuotes; }
+            } else if (char === ',' && !insideQuotes) {
+                currentRow.push(currentCell.trim()); currentCell = '';
+            } else if (char === '\n' && !insideQuotes) {
+                currentRow.push(currentCell.trim());
+                if (currentRow.length > 1) rows.push(currentRow);
+                currentRow = []; currentCell = '';
+            } else { currentCell += char; }
+        }
+        if (currentCell || currentRow.length > 0) {
+            currentRow.push(currentCell.trim());
+            if (currentRow.length > 1) rows.push(currentRow);
+        }
+        return rows;
+    }
+
+    function generateCalendarLink(title, dateObj, location) {
+        if (!dateObj) return '#';
+        const start = dateObj.toISOString().replace(/-|:|\.\d\d\d/g,"").slice(0,8);
+        const nextDay = new Date(dateObj);
+        nextDay.setDate(nextDay.getDate() + 1);
+        const end = nextDay.toISOString().replace(/-|:|\.\d\d\d/g,"").slice(0,8);
+        
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&location=${encodeURIComponent(location || '')}&details=${encodeURIComponent('שמחה בישיבת יסודות')}`;
+    }
+
+    function renderEvents(eventsWrapper, highlight = false) {
+        const container = document.getElementById('eventsList');
+        container.innerHTML = '';
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        
+        eventsWrapper.forEach(item => {
+            const row = item.originalRow;
+            const dateObj = item.dateObj;
+            if (row.length < 4) return; 
+
+            const date = row[0] || '';
+            const day = row[1] || '';
+            const vaad = row[2] || '';
+            const title = row[3] || 'אירוע';
+            const location = row[4] || '';
+            const orchestra = row[5] || '';
+
+            let daysLeftHtml = '';
+            if (dateObj) {
+                const diffDays = Math.ceil((dateObj - now) / (1000 * 60 * 60 * 24));
+                if (diffDays > 2) daysLeftHtml = `<div class="days-count">⏳ עוד ${diffDays} ימים</div>`;
+            }
+
+            let relativeTagHtml = '';
+            const relativeInfo = getRelativeTimeLabel(dateObj);
+            if (relativeInfo) relativeTagHtml = `<div class="relative-date-tag ${relativeInfo.class}">${relativeInfo.text}</div>`;
+
+            const card = document.createElement('div');
+            card.className = 'event-card' + (highlight ? ' highlight' : '');
+            
+            const vaadHtml = vaad ? `<div class="vaad-badge">${vaad}</div>` : '';
+
+            let actionsHtml = `<div class="actions-row">`;
+            
+            if (location) {
+                const moovitLink = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}&travelmode=transit`;
+                actionsHtml += `<a href="${moovitLink}" target="_blank" class="nav-btn" title="אוטובוסים">🚶 <span>תחב"צ</span></a>`;
+            }
+
+            if (dateObj) {
+                const calLink = generateCalendarLink(title, dateObj, location);
+                actionsHtml += `<a href="${calLink}" target="_blank" class="nav-btn" title="יומן">📅 <span>הוסף ליומן</span></a>`;
+                
+                const eventId = btoa(unescape(encodeURIComponent(title + date))).replace(/=/g, '');
+                const isReminded = hasReminder(eventId);
+                const btnClass = isReminded ? 'nav-btn reminder-btn active' : 'nav-btn reminder-btn';
+                const btnIcon = isReminded ? '🔕' : '🔔';
+                const btnText = isReminded ? 'ביטול תזכורת' : 'תזכורת';
+                
+                actionsHtml += `<button class="${btnClass}" data-id="${eventId}" data-title="${title}" data-date="${dateObj.getTime()}" title="${btnText}">${btnIcon} <span>${btnText}</span></button>`;
+            }
+
+            actionsHtml += `</div>`;
+
+            card.innerHTML = `
+                <div class="date-box">
+                    <span class="date-day">${day}</span>
+                    <span class="date-full">${date}</span>
+                    ${relativeTagHtml}
+                    ${daysLeftHtml}
+                </div>
+                <div class="info-box">
+                    <h3>${title}</h3>
+                    ${location ? `<div class="info-location"><span class="icon">📍</span> <span>${location}</span></div>` : ''}
+                    ${orchestra ? `<div class="info-orchestra"><span class="icon">🎵</span> ${orchestra}</div>` : ''}
+                    ${actionsHtml}
+                </div>
+                ${vaadHtml}
+            `;
+            container.appendChild(card);
+        });
+
+        document.querySelectorAll('.reminder-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                const title = e.currentTarget.dataset.title;
+                const dateVal = parseInt(e.currentTarget.dataset.date);
+                toggleReminder(id, title, dateVal, e.currentTarget);
+            });
+        });
+    }
+
+    function getReminders() {
+        try {
+            return JSON.parse(localStorage.getItem('weddingReminders')) || [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    function hasReminder(id) {
+        return getReminders().some(r => r.id === id);
+    }
+
+    function toggleReminder(id, title, dateTimestamp, btnElement) {
+        let reminders = getReminders();
+        const exists = reminders.findIndex(r => r.id === id);
+        
+        if (exists >= 0) {
+            reminders.splice(exists, 1);
+            btnElement.classList.remove('active');
+            btnElement.innerHTML = '🔔 <span>תזכורת</span>';
+            btnElement.title = 'תזכורת';
+            showToast('התזכורת בוטלה.');
+        } else {
+            reminders.push({ id, title, date: dateTimestamp });
+            btnElement.classList.add('active');
+            btnElement.innerHTML = '🔕 <span>ביטול תזכורת</span>';
+            btnElement.title = 'ביטול תזכורת';
+            showToast('תזכורת נשמרה! תתקבל התראה בכניסה לאתר ביום שלפני האירוע.');
+        }
+        
+        localStorage.setItem('weddingReminders', JSON.stringify(reminders));
+    }
+
+    function checkReminders() {
+        const reminders = getReminders();
+        if (reminders.length === 0) return;
+
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        let activeAlerts = [];
+        let updatedReminders = [];
+
+        reminders.forEach(rem => {
+            const remDate = new Date(rem.date);
+            remDate.setHours(0, 0, 0, 0);
+
+            if (remDate.getTime() === tomorrow.getTime()) {
+                activeAlerts.push(`מחר! ${rem.title}`);
+                updatedReminders.push(rem);
+            } else if (remDate.getTime() === now.getTime()) {
+                activeAlerts.push(`היום! ${rem.title}`);
+                updatedReminders.push(rem);
+            } else if (remDate.getTime() > now.getTime()) {
+                updatedReminders.push(rem);
+            }
+        });
+
+        localStorage.setItem('weddingReminders', JSON.stringify(updatedReminders));
+
+        if (activeAlerts.length > 0) {
+            setTimeout(() => {
+                activeAlerts.forEach(msg => showToast('🔔 ' + msg, true));
+            }, 1000);
+        }
+    }
+
+    function showToast(message, isAlert = false) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        if (isAlert) {
+            toast.style.borderRightColor = '#d32f2f';
+            toast.style.borderRightWidth = '8px';
+            toast.style.backgroundColor = '#fff8f8';
+            document.body.classList.contains('dark-mode') && (toast.style.backgroundColor = '#3a1c1c');
+        }
+        
+        toast.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()">✕</button>
+        `;
+        
+        container.appendChild(toast);
+        
+        if (!isAlert) {
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, 4000);
+        }
+    }
+
+    // שליחת לוג ברקע ללא חסימת ממשק
+    window.addEventListener('load', () => {
+        setTimeout(async () => {
+            try {
+                const baseUrl = 'https://script.google.com/macros/s/AKfycbyHnFlvSHKDgBJ2Kbw-3320YHwuwHH2PqABojHyt22pYPe4B7Sek6meB_XDRnp0VEIXwg/exec';
+                let userIP = 'לא ידוע';
+                try {
+                    const ipResponse = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipResponse.json();
+                    userIP = ipData.ip;
+                } catch (e) {
+                    // התעלמות משגיאות IP ברשתות מסוננות
+                }
+
+                const userAgent = navigator.userAgent;
+                const fullUrl = `${baseUrl}?action=page_view&ip=${encodeURIComponent(userIP)}&userAgent=${encodeURIComponent(userAgent)}`;
+                
+                fetch(fullUrl, {
+                    method: 'POST',
+                    mode: 'no-cors'
+                }).catch(() => {});
+            } catch (e) {}
+        }, 1500);
+    });
+</script>
+
+</body>
+</html>
